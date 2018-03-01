@@ -1,19 +1,32 @@
 #include <iostream>
+#include <vector>
 
+//Boost includes
+#include <boost/shared_ptr.hpp>
+
+//Ros includes
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+
+//library includes
+#include <rws2018_libs/team.h>
+
+//geometric trans. includes
+#include <tf/transform_broadcaster.h>
 
 using namespace std;
 
 namespace rws_pboucanova
 {
-
-
 class Player
 {
 private:
        std::string team;                        
 
 public:
-    Player(std::string argin_name) { this->name = argin_name; }
+    Player(std::string argin_name) { name = argin_name; }
+
+    string name;
     
     //overload de funções -> ou seja duas ou mais funçõoes com o mesmo nome;
     int setTeamName(int team_index = 0)
@@ -30,11 +43,11 @@ public:
         }
     }
     
-    int setTeamName(std::string team)
+    int setTeamName(std::string arg_team)
     {
         // este team é o argumento da função
-        if (team=="red" || team=="green"|| team=="blue") {
-            this->team = team;
+        if (arg_team=="red" || arg_team=="green"|| arg_team=="blue") {
+            team = arg_team;
             return 1;
         }
         else
@@ -45,18 +58,73 @@ public:
     }
 
     std::string getTeamName(void){return team;}
-    std::string name;
+    
 };
-
+              
+             
 class MyPlayer : public Player
 {
     public:
+        boost::shared_ptr <Team> red_team;
+        boost::shared_ptr <Team> green_team;
+        boost::shared_ptr <Team> blue_team;
+      
+        boost::shared_ptr <Team> my_team;
+        boost::shared_ptr <Team> my_preys;
+        boost::shared_ptr <Team> my_hunters;
+
+        tf::TransformBroadcaster br; 
+      
         MyPlayer(std::string name, std::string team): Player(name)
         {
+            red_team   = boost::shared_ptr <Team> (new Team("red"));  
+            green_team = boost::shared_ptr <Team> (new Team("green"));
+            blue_team  = boost::shared_ptr <Team> (new Team("blue"));
+            
             setTeamName(team);
+            printReport();
+
+            if (red_team->playerBelongsToTeam(name)) {
+                my_team = red_team;
+                my_preys = green_team;
+                my_hunters = blue_team;
+
+                setTeamName("red");
+            }
+            else if (green_team->playerBelongsToTeam(name)) {
+                 my_team =green_team;
+                my_preys =blue_team;
+                my_hunters =red_team;
+                
+                setTeamName("green");
+            }
+
+             else if (blue_team->playerBelongsToTeam(name)) {
+                 my_team =blue_team;
+                my_preys =red_team;
+                my_hunters =green_team;
+
+                setTeamName("blue");
+               
+            }
+        }
+
+        void printReport()
+        {
+            cout << "My name is " << name << " and my team is " << getTeamName() << endl;
+        }
+
+        void move(void)
+        {
+            tf::Transform transform;
+            transform.setOrigin( tf::Vector3(3, 6, 0.0) );
+            tf::Quaternion q;
+            q.setRPY(0, 0,M_PI );
+            transform.setRotation(q);
+            br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world","pboucanova" ));
         }
 };
-}
+}// fim do namespace
 
 //Exemplo basico para overloads
 int somar(int a , int b){return a+b;}
@@ -65,59 +133,28 @@ double somar(double a, double b){return a+b;}
 
 
 #if 1
-int main()
+int main(int argc, char ** argv)
 {
-    rws_pboucanova::MyPlayer My_player("pboucanova", "green");
 
-    std::cout << "my_player.name is " << My_player.name << std::endl;
-    std::cout << "team is " << My_player.getTeamName() << std::endl;
-}
-#endif  
+    ros::init(argc, argv, "pboucanova");
+                          
+    ros::NodeHandle n;    
    
+    rws_pboucanova::MyPlayer My_player("pboucanova", "green");
+    
+   
+   if (My_player.green_team->playerBelongsToTeam("pboucanova")) {
+       cout << "o pedro esta na equipa certa" << endl;
+    }
 
-#if 0
-int main()
-{
-    myPlayer my_player("pboucanova", "green");
+    ros::Rate loop_rate(10);
+     while (ros::ok()) {
+         My_player.move();
+         ros::spinOnce();
+         loop_rate.sleep();
+     }
 
-
-    std::cout << "my_player.name is " << my_player.name << std::endl;
-    std::cout << "team is " << my_player.getTeamName() << std::endl;
+    ros::spin();
 }
 #endif  
  
-
-#if 0
-int main()
-{
-    Player player("pboucanova");
-    player.setTeamName("red");
-    player.setTeamName(2);
-
-    std::cout << "player.name is " << player.name << std::endl;
-    std::cout << "team is " << player.getTeam() << std::endl;
-}
-#endif  
-
-#if 0
-int main()
-{
-   std::string player_name = "pboucanova";
-
-    Player player(player_name);
-    
-    
-    std::cout << "Created an instance of class player with public name " << player.name << std::endl;
-}
-
-#endif
-#if 0  /**Parte 1*/
-
-int main()
-{
-    std::cout << "Hello world" << std::endl;
-    return 1;
-}
-
-#endif
-
