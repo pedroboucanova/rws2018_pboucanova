@@ -10,11 +10,12 @@ namespace rws_pboucanova
 class Player
 {
 private:
-       std::string team;
+       std::string team;                        
 
 public:
-    Player(std::string name) { this->name=name; }
-
+    Player(std::string argin_name) { this->name = argin_name; }
+    
+    //overload de funções -> ou seja duas ou mais funçõoes com o mesmo nome;
     int setTeamName(int team_index = 0)
     {
         switch (team_index) {
@@ -31,6 +32,7 @@ public:
     
     int setTeamName(std::string team)
     {
+        // este team é o argumento da função
         if (team=="red" || team=="green"|| team=="blue") {
             this->team = team;
             return 1;
@@ -44,32 +46,31 @@ public:
 
     std::string getTeamName(void){return team;}
     std::string name;
-    
 };
 
-class myPlayer: public Player
+class MyPlayer : public Player
 {
     public:
-        myPlayer(std::string name, std::string team): Player(name)
+        MyPlayer(std::string name, std::string team): Player(name)
         {
             setTeamName(team);
         }
 };
-
- 
 }
 
+//Exemplo basico para overloads
+int somar(int a , int b){return a+b;}
+double somar(double a, double b){return a+b;}
 
 
 
 #if 1
 int main()
 {
-    rws_pboucanova::myPlayer my_player("pboucanova", "green");
+    rws_pboucanova::MyPlayer My_player("pboucanova", "green");
 
-
-    std::cout << "my_player.name is " << my_player.name << std::endl;
-    std::cout << "team is " << my_player.getTeamName() << std::endl;
+    std::cout << "my_player.name is " << My_player.name << std::endl;
+    std::cout << "team is " << My_player.getTeamName() << std::endl;
 }
 #endif  
    
