@@ -160,13 +160,35 @@ class MyPlayer : public Player
             double y = T.getOrigin().y();
             double a = 0;
 
+            // AI PART
+            //
+           double dist = 6;
+           double delta_alfa = M_PI/2;
+           
+           // CONSTRAINS PART
+           //
+           double dist_max = msg->dog;
+           double dist_with_constrains;
+           dist > dist_max ? dist = dist_max: dist = dist;
 
-            
-            T.setOrigin( tf::Vector3(x+=0.01, y, 0.0) );
-            tf::Quaternion q;
-            q.setRPY(0, 0,a );
-            T.setRotation(q);
-            br.sendTransform(tf::StampedTransform(T, ros::Time::now(), "world","pboucanova" ));
+           double delta_alfa_max = M_PI/30;
+           fabs(delta_alfa) > fabs(delta_alfa_max) ? delta_alfa = delta_alfa_max * delta_alfa / fabs(delta_alfa): delta_alfa = delta_alfa;
+
+
+
+           tf::Transform my_move_T;
+            my_move_T.setOrigin(tf::Vector3(dist, 0.0, 0.0));
+
+            tf::Quaternion q1;
+            q1.setRPY(0,0,delta_alfa);
+            my_move_T.setRotation(q1);
+            T = T * my_move_T;
+            br.sendTransform(tf::StampedTransform(T,ros::Time::now(), "world", "pboucanova"));
+
+
+
+
+
         }    
         
       
