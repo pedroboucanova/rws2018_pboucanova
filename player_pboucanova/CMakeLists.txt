@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   rws2018_libs
   tf
+  rws2018_msgs
   )
 
 ## System dependencies are found with CMake's conventions
@@ -51,7 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
+#   MakeAPlay.msg
 #   Message2.msg
 # )
 
