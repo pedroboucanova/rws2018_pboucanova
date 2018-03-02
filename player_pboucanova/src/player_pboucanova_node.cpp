@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-
+#include <cmath>
 //Boost includes
 #include <boost/shared_ptr.hpp>
 
@@ -194,6 +194,25 @@ class MyPlayer : public Player
           }                                                                        
                                                                                    
           return atan2(t.getOrigin().y(), t.getOrigin().x());                      
+        }  
+          
+          
+          double getDistanceToPlayer(string other_player, double time_to_wait=DEFAULT_TIME)
+        {                                                                          
+          StampedTransform t; //The transform object                               
+          //Time now = Time::now(); //get the time                                 
+          Time now = Time(0); //get the latest transform received                  
+                                                                                   
+          try{                                                                     
+            listener.waitForTransform("pboucanova", other_player, now, Duration(time_to_wait));
+            listener.lookupTransform("pboucanova", other_player, now, t);           
+          }                                                                        
+          catch (TransformException& ex){                                          
+            ROS_ERROR("%s",ex.what());                                             
+            return NAN;                                                            
+          }                                                                        
+                                                                                   
+          return sqrt(t.getOrigin().y()*t.getOrigin().y() +  t.getOrigin().x()*t.getOrigin().x());                      
         }   
         void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
         {
@@ -204,9 +223,22 @@ class MyPlayer : public Player
             // AI PART
             //
    
-          
-           double dist = 6;
-           double delta_alfa = getAngleToPLayer("tosorio");   
+                 double min_distance = 99999;                                             
+          string player_to_hunt = "no player";                                     
+          for (size_t i=0; i < my_preys->player_names.size(); i++)                 
+          {                                                                        
+              double dista = getDistanceToPlayer(my_preys->player_names[i]);        
+              if (isnan(dista))                                                     
+              {                                                                    
+              }                                                                    
+              else if (dista < min_distance)                                        
+              {                                                                    
+                min_distance = dista;                                               
+                player_to_hunt = my_preys->player_names[i];                        
+              }                                                                    
+          }   
+           double dist = 1;
+           double delta_alfa = getAngleToPLayer(player_to_hunt);   
           //
           //double delta_alfa = M_PI/2;
            
