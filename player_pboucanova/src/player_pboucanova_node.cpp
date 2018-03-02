@@ -16,6 +16,14 @@
 #include <rws2018_msgs/MakeAPlay.h>
 
 #include <visualization_msgs/Marker.h>
+#include <tf/transform_listener.h>
+
+
+#define DEFAULT_TIME 0.05
+
+using namespace ros;
+using namespace tf;
+
 
 using namespace std;
 
@@ -83,6 +91,9 @@ class MyPlayer : public Player
         tf::Transform T;
          boost::shared_ptr<ros::Publisher> pub;
        
+
+         tf::TransformListener listener;
+
        // s::Publisher vis_pub = node_handle.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
         
         
@@ -167,7 +178,23 @@ class MyPlayer : public Player
 
 
         }
-
+          double getAngleToPLayer(string other_player, double time_to_wait=DEFAULT_TIME)
+        {                                                                          
+          StampedTransform t; //The transform object                               
+          //Time now = Time::now(); //get the time                                 
+          Time now = Time(0); //get the latest transform received                  
+                                                                                   
+          try{                                                                     
+            listener.waitForTransform("pboucanova", other_player, now, Duration(time_to_wait));
+            listener.lookupTransform("pboucanova", other_player, now, t);           
+          }                                                                        
+          catch (TransformException& ex){                                          
+            ROS_ERROR("%s",ex.what());                                             
+            return NAN;                                                            
+          }                                                                        
+                                                                                   
+          return atan2(t.getOrigin().y(), t.getOrigin().x());                      
+        }   
         void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
         {
             double x = T.getOrigin().x();
@@ -176,9 +203,17 @@ class MyPlayer : public Player
 
             // AI PART
             //
+   
+          
            double dist = 6;
-           double delta_alfa = M_PI/2;
+           double delta_alfa = getAngleToPLayer("tosorio");   
+          //
+          //double delta_alfa = M_PI/2;
            
+            if (isnan(delta_alfa))                                                  
+           delta_alfa = 0;      
+
+
            // CONSTRAINS PART
            //
            double dist_max = msg->dog;
@@ -215,7 +250,7 @@ marker.color.r = 0.0;
 marker.color.g = 1.0;
 marker.color.b = 0.0;
 marker.lifetime = ros::Duration(2);
-marker.text = "..->..";
+    marker.text = "->->-<-<-<-<";
 //only if using a MESH_RESOURCE marker type:
 pub->publish( marker );
 
