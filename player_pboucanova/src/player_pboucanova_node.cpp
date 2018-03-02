@@ -237,7 +237,7 @@ class MyPlayer : public Player
                 player_to_hunt = my_preys->player_names[i];                        
               }                                                                    
           }   
-           double dist = 1;
+           double dist = 9999;
            double delta_alfa = getAngleToPLayer(player_to_hunt);   
           //
           //double delta_alfa = M_PI/2;
