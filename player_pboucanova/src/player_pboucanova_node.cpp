@@ -117,8 +117,15 @@ class MyPlayer : public Player
              sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
             *sub = n.subscribe("/make_a_play",100, &MyPlayer::move, this);
 
+            struct timeval t1;
+            gettimeofday(&t1, NULL);
+            srand(t1.tv_usec);
+            double start_x = ((double) rand()/(double)RAND_MAX)* 10 -5;
+            double start_y = ((double) rand()/(double)RAND_MAX)* 10 -5;
+            printf("start_x=%f start_y=%f\n",start_x, start_y);
+                      
 
-            warp(randomizePosition(), randomizePosition(), M_PI/2);
+            warp(start_x, start_y, M_PI/2);
         }
 
         void printReport()
