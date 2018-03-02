@@ -39,7 +39,8 @@ public:
             case 2:
                 return setTeamName("blue");     break;
             default:
-                std::cout << "wrong  team index given. Cannot set team" << std::endl;
+                 ROS_WARN("wrong team index given. Cannot set team");
+                //std::cout << "wrong  team index given. Cannot set team" << std::endl;
         }
     }
     
@@ -52,7 +53,7 @@ public:
         }
         else
         {
-            std::cout << "cannot set team name to " << team << std::endl;
+           // std::cout << "cannot set team name to " << team << std::endl;
             return  0;
         }
     }
@@ -111,7 +112,12 @@ class MyPlayer : public Player
 
         void printReport()
         {
-            cout << "My name is " << name << " and my team is " << getTeamName() << endl;
+          //  cout << "My name is " << name << " and my team is " << getTeamName() << endl;
+       
+            //print em ros 
+            
+            ROS_INFO("My name is %s and my team is %s" ,name.c_str(), getTeamName().c_str() );
+        
         }
 
         void move(void)
@@ -122,6 +128,10 @@ class MyPlayer : public Player
             q.setRPY(0, 0,M_PI );
             transform.setRotation(q);
             br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world","pboucanova" ));
+ 
+        
+            
+        
         }
 };
 }// fim do namespace
@@ -143,9 +153,9 @@ int main(int argc, char ** argv)
     rws_pboucanova::MyPlayer My_player("pboucanova", "green");
     
    
-   if (My_player.green_team->playerBelongsToTeam("pboucanova")) {
-       cout << "o pedro esta na equipa certa" << endl;
-    }
+//   if (My_player.green_team->playerBelongsToTeam("pboucanova")) {
+//       cout << "o pedro esta na equipa certa" << endl;
+//    }
 
     ros::Rate loop_rate(10);
      while (ros::ok()) {
