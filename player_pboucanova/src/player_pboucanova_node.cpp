@@ -13,7 +13,7 @@
 
 //geometric trans. includes
 #include <tf/transform_broadcaster.h>
-
+#include <rws2018_msgs/MakeAPlay.h> 
 using namespace std;
 
 namespace rws_pboucanova
@@ -73,15 +73,20 @@ class MyPlayer : public Player
         boost::shared_ptr <Team> my_team;
         boost::shared_ptr <Team> my_preys;
         boost::shared_ptr <Team> my_hunters;
+        ros::NodeHandle n;        
+        boost::shared_ptr<ros::Subscriber> sub;
 
         tf::TransformBroadcaster br; 
-      
+        tf::Transform T;
         MyPlayer(std::string name, std::string team): Player(name)
         {
             red_team   = boost::shared_ptr <Team> (new Team("red"));  
             green_team = boost::shared_ptr <Team> (new Team("green"));
             blue_team  = boost::shared_ptr <Team> (new Team("blue"));
             
+
+          
+
             setTeamName(team);
             printReport();
 
@@ -107,7 +112,13 @@ class MyPlayer : public Player
 
                 setTeamName("blue");
                
-            }
+            }  
+             
+             sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
+            *sub = n.subscribe("/make_a_play",100, &MyPlayer::move, this);
+
+
+            warp(randomizePosition(), randomizePosition(), M_PI/2);
         }
 
         void printReport()
@@ -120,19 +131,38 @@ class MyPlayer : public Player
         
         }
 
-        void move(void)
+
+
+
+        void warp (double x, double y, double alfa)
         {
-            tf::Transform transform;
-            transform.setOrigin( tf::Vector3(3, 6, 0.0) );
+            T.setOrigin(tf::Vector3(x, y, 0.0));
             tf::Quaternion q;
-            q.setRPY(0, 0,M_PI );
-            transform.setRotation(q);
-            br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world","pboucanova" ));
- 
-        
-            
-        
+            q.setRPY(0,0,alfa);
+            T.setRotation(q);
+
+            br.sendTransform(tf::StampedTransform(T, ros::Time::now(), "world", "pboucanova"));
+            ROS_INFO("Warning to x=%f y=%f a=%f", x, y, alfa);
+
+
         }
+
+        void move(const rws2018_msgs::MakeAPlay::ConstPtr& msg)
+        {
+            double x = T.getOrigin().x();
+            double y = T.getOrigin().y();
+            double a = 0;
+
+
+            
+            T.setOrigin( tf::Vector3(x+=0.01, y, 0.0) );
+            tf::Quaternion q;
+            q.setRPY(0, 0,a );
+            T.setRotation(q);
+            br.sendTransform(tf::StampedTransform(T, ros::Time::now(), "world","pboucanova" ));
+        }    
+        
+      
 };
 }// fim do namespace
 
@@ -157,12 +187,12 @@ int main(int argc, char ** argv)
 //       cout << "o pedro esta na equipa certa" << endl;
 //    }
 
-    ros::Rate loop_rate(10);
-     while (ros::ok()) {
-         My_player.move();
-         ros::spinOnce();
-         loop_rate.sleep();
-     }
+ //   ros::Rate loop_rate(10);
+//     while (ros::ok()) {
+//         My_player.move();
+ //        ros::spinOnce();
+ //        loop_rate.sleep();
+  //   }
 
     ros::spin();
 }
