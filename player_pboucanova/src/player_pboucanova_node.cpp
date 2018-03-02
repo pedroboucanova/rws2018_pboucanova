@@ -13,7 +13,10 @@
 
 //geometric trans. includes
 #include <tf/transform_broadcaster.h>
-#include <rws2018_msgs/MakeAPlay.h> 
+#include <rws2018_msgs/MakeAPlay.h>
+
+#include <visualization_msgs/Marker.h>
+
 using namespace std;
 
 namespace rws_pboucanova
@@ -78,6 +81,12 @@ class MyPlayer : public Player
 
         tf::TransformBroadcaster br; 
         tf::Transform T;
+         boost::shared_ptr<ros::Publisher> pub;
+       
+       // s::Publisher vis_pub = node_handle.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
+        
+        
+        
         MyPlayer(std::string name, std::string team): Player(name)
         {
             red_team   = boost::shared_ptr <Team> (new Team("red"));  
@@ -116,7 +125,12 @@ class MyPlayer : public Player
              
              sub = boost::shared_ptr<ros::Subscriber> (new ros::Subscriber());
             *sub = n.subscribe("/make_a_play",100, &MyPlayer::move, this);
-
+                                                                                                                
+             pub=boost::shared_ptr<ros::Publisher> (new ros::Publisher());
+            *pub = n.advertise<visualization_msgs::Marker>( "/bocas", 0 );                                     
+            
+            
+            
             struct timeval t1;
             gettimeofday(&t1, NULL);
             srand(t1.tv_usec);
@@ -186,7 +200,24 @@ class MyPlayer : public Player
             br.sendTransform(tf::StampedTransform(T,ros::Time::now(), "world", "pboucanova"));
 
 
+            visualization_msgs::Marker marker;
+marker.header.frame_id = "pboucanova";
+marker.header.stamp = ros::Time();
+marker.ns = "pboucanova";
+marker.id = 0;
+marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+marker.action = visualization_msgs::Marker::ADD;
 
+marker.pose.orientation.w = 1.0;
+marker.scale.z = 0.3;
+marker.color.a = 1.0; // Don't forget to set the alpha!
+marker.color.r = 0.0;
+marker.color.g = 1.0;
+marker.color.b = 0.0;
+marker.lifetime = ros::Duration(2);
+marker.text = "..->..";
+//only if using a MESH_RESOURCE marker type:
+pub->publish( marker );
 
 
         }    
@@ -225,5 +256,4 @@ int main(int argc, char ** argv)
 
     ros::spin();
 }
-#endif  
- 
+#endif 
