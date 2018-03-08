@@ -271,7 +271,7 @@ public:
 
     // CONSTRAINS PART
     //
-    double dist_max = jafoste(msg)*0.7;
+    double dist_max = jafoste(msg)*0.9;
     double dist_with_constrains;
     dist > dist_max ? dist = dist_max : dist = dist;
 
